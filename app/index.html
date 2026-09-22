@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Frontier Amiga Face Editor v0.01</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1>Frontier Amiga Face Editor <span class="version">v0.01</span></h1>
+    <div class="sub">Identi-kit portrait viewer / component editor groundwork</div>
+  </div>
+  <label class="filebtn">Load Frontier executable
+    <input id="fileInput" type="file">
+  </label>
+</header>
+
+<div id="dropZone">Drop the Amiga <code>Frontier</code> executable here, or use “Load Frontier executable”.</div>
+
+<main>
+  <aside class="leftPanel">
+    <section>
+      <h2>Source</h2>
+      <div id="sourceStatus" class="status warn">No executable loaded.</div>
+      <div id="sourceMeta" class="mini muted"></div>
+    </section>
+
+    <section>
+      <h2>Assembled face</h2>
+      <label>Face bank
+        <select id="bankSelect">
+          <option value="A">Bank A</option>
+          <option value="B">Bank B</option>
+        </select>
+      </label>
+
+      <label>32-bit face seed
+        <input id="seedInput" class="monoInput" type="text" value="00000000" maxlength="10" spellcheck="false">
+      </label>
+      <div class="buttonRow three">
+        <button id="prevFace" type="button">Previous</button>
+        <button id="randomFace" type="button">Random</button>
+        <button id="nextFace" type="button">Next</button>
+      </div>
+
+      <label>Display palette
+        <select id="paletteSelect">
+          <option value="auto">Auto — runtime selection</option>
+          <option value="0">Palette 0</option>
+          <option value="1">Palette 1</option>
+          <option value="2">Palette 2</option>
+          <option value="3">Palette 3</option>
+          <option value="4">Palette 4</option>
+          <option value="5">Palette 5</option>
+          <option value="6">Palette 6</option>
+          <option value="7">Palette 7</option>
+          <option value="grey">Indexed greyscale</option>
+        </select>
+      </label>
+      <div id="paletteInfo" class="mini"></div>
+      <div id="paletteSwatches" class="swatches"></div>
+    </section>
+
+    <section>
+      <h2>Component</h2>
+      <label>Part
+        <select id="categorySelect"></select>
+      </label>
+      <label>Variant
+        <select id="variantSelect"></select>
+      </label>
+      <button id="useVariant" type="button">Use variant in current face</button>
+      <div id="componentUse" class="mini muted"></div>
+    </section>
+
+    <details>
+      <summary>Advanced runtime controls</summary>
+      <label>Secondary control word
+        <input id="controlInput" class="monoInput" type="text" value="0000" maxlength="6" spellcheck="false">
+      </label>
+      <div class="mini muted">Bits 3–5 override the dynamic face palette when non-zero. Bits 1–2 select the special headgear state. Special headgear composition is still under investigation.</div>
+      <label class="checkline"><input id="showBounds" type="checkbox" checked> Show selected component bounds</label>
+    </details>
+  </aside>
+
+  <div class="workspace">
+    <section class="viewerPanel">
+      <div class="viewerHeader">
+        <div>
+          <h2>Complete portrait preview</h2>
+          <div id="faceSummary" class="mini muted">Load the Frontier executable to decode the original graphics.</div>
+        </div>
+        <div class="legend">128×144 source-coordinate canvas · pixel-perfect scaling</div>
+      </div>
+      <div class="canvasWrap">
+        <canvas id="faceCanvas" width="128" height="144"></canvas>
+      </div>
+    </section>
+
+    <section class="usagePanel">
+      <div class="viewerHeader">
+        <div>
+          <h2>Consistency preview — selected component locked</h2>
+          <div class="mini muted">Representative generated faces. Click one to make it the current face.</div>
+        </div>
+        <button id="refreshUsage" type="button">New examples</button>
+      </div>
+      <div id="usageGrid" class="usageGrid"></div>
+    </section>
+  </div>
+
+  <aside class="rightPanel">
+    <section>
+      <h2>Selected component</h2>
+      <div class="componentCanvasWrap">
+        <canvas id="componentCanvas" width="112" height="64"></canvas>
+      </div>
+      <div id="componentMeta" class="mini mono"></div>
+    </section>
+
+    <section>
+      <h2>Artist tools</h2>
+      <div class="toolGrid">
+        <button disabled title="Placeholder for Indy Heat raster tool integration">✎ Pencil</button>
+        <button disabled>╱ Line</button>
+        <button disabled>□ Rectangle</button>
+        <button disabled>■ Filled</button>
+        <button disabled>○ Ellipse</button>
+        <button disabled>● Filled</button>
+        <button disabled>∿ Curve</button>
+        <button disabled>⬠ Free-form</button>
+        <button disabled>▨ Fill</button>
+        <button disabled>⌾ Pick</button>
+      </div>
+      <div class="mini muted">v0.01 deliberately leaves painting disabled. The integration point is ready for the shared indexed-raster tools from the Indy Heat editor rather than a second implementation.</div>
+    </section>
+
+    <details open>
+      <summary>Decoded selectors</summary>
+      <div id="selectorSummary" class="mini mono"></div>
+    </details>
+
+    <details>
+      <summary>Developer information</summary>
+      <div id="developerInfo" class="mini mono"></div>
+    </details>
+  </aside>
+</main>
+
+<script src="frontier-face-data.js?v=001"></script>
+<script src="app.js?v=001"></script>
+</body>
+</html>
