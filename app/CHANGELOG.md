@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.03 — correct GitHub Frontier source
+
+- Changed automatic startup loading to use the exact repository path:
+  `HoraceAndTheSpider/Frontier-Character-Editor/whdload/data/game/Frontier`.
+- Uses the raw `master` branch URL as the primary source.
+- Keeps `../whdload/data/game/Frontier` as a same-project hosted fallback.
+- Retains manual file selection and drag/drop unchanged.
+- Preserves the compact v0.02 assembled-face preview sizing.
+
 ## v0.02 — automatic source load and preview sizing
 
 - Added an automatic startup attempt to fetch `Frontier` from the hosted project.

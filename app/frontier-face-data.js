@@ -1,7 +1,7 @@
 (function(root){
 'use strict';
 
-const VERSION='0.02';
+const VERSION='0.03';
 const EXPECTED_SHA256='ec97dbb2424a3b66509fc742d3c7960be223c2c12c86d7aa17960e4f0577231c';
 const EXPECTED_SIZE=645752;
 const HUNK7_FILE_OFFSET=0x551C4;

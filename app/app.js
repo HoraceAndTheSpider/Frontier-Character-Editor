@@ -7,8 +7,9 @@ let sourceBytes=null,decoded=null,sourceName='',sourceHash=null;
 let seed=0,control=0,selectedCategory='eyes_eyewear',usageNonce=0;
 
 
-/* v0.02 automatic source loading. Manual loading remains the fallback. */
+/* v0.03 automatic source loading. Manual loading remains the fallback. */
 const AUTO_SOURCE_FILENAME='Frontier';
+const AUTO_SOURCE_URL='https://raw.githubusercontent.com/HoraceAndTheSpider/Frontier-Character-Editor/master/whdload/data/game/Frontier';
 
 function uniqueUrls(urls){
   const seen=new Set(),out=[];
@@ -17,15 +18,13 @@ function uniqueUrls(urls){
 }
 
 function autoSourceCandidates(){
-  const urls=[],loc=window.location;
+  const urls=[AUTO_SOURCE_URL],loc=window.location;
+
+  // Keep a same-project hosted fallback for local/web mirrors of the repository.
   if(/^https?:$/i.test(loc.protocol)){
-    try{urls.push(new URL('../'+AUTO_SOURCE_FILENAME,loc.href).href);}catch(_){}
-    try{urls.push(new URL(AUTO_SOURCE_FILENAME,loc.href).href);}catch(_){}
+    try{urls.push(new URL('../whdload/data/game/'+AUTO_SOURCE_FILENAME,loc.href).href);}catch(_){}
   }
-  if(/\.github\.io$/i.test(loc.hostname)){
-    const owner=loc.hostname.split('.')[0],parts=loc.pathname.split('/').filter(Boolean),repo=parts[0];
-    if(owner&&repo)for(const branch of ['main','master'])urls.push(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${AUTO_SOURCE_FILENAME}`);
-  }
+
   return uniqueUrls(urls);
 }
 
@@ -51,7 +50,7 @@ async function tryAutoLoad(){
   const candidates=autoSourceCandidates();
   if(!candidates.length){
     $('sourceStatus').className='status warn';
-    $('sourceStatus').textContent='Automatic GitHub load is unavailable from this local page. Load Frontier manually.';
+    $('sourceStatus').textContent='Automatic Frontier source is unavailable. Load Frontier manually.';
     return false;
   }
   $('sourceStatus').className='status warn';$('sourceStatus').textContent='Trying to load Frontier automatically…';
