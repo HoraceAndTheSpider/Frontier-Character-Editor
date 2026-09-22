@@ -6,6 +6,73 @@ const $=id=>document.getElementById(id);
 let sourceBytes=null,decoded=null,sourceName='',sourceHash=null;
 let seed=0,control=0,selectedCategory='eyes_eyewear',usageNonce=0;
 
+
+/* v0.02 automatic source loading. Manual loading remains the fallback. */
+const AUTO_SOURCE_FILENAME='Frontier';
+
+function uniqueUrls(urls){
+  const seen=new Set(),out=[];
+  for(const url of urls){if(!url||seen.has(url))continue;seen.add(url);out.push(url);}
+  return out;
+}
+
+function autoSourceCandidates(){
+  const urls=[],loc=window.location;
+  if(/^https?:$/i.test(loc.protocol)){
+    try{urls.push(new URL('../'+AUTO_SOURCE_FILENAME,loc.href).href);}catch(_){}
+    try{urls.push(new URL(AUTO_SOURCE_FILENAME,loc.href).href);}catch(_){}
+  }
+  if(/\.github\.io$/i.test(loc.hostname)){
+    const owner=loc.hostname.split('.')[0],parts=loc.pathname.split('/').filter(Boolean),repo=parts[0];
+    if(owner&&repo)for(const branch of ['main','master'])urls.push(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${AUTO_SOURCE_FILENAME}`);
+  }
+  return uniqueUrls(urls);
+}
+
+async function loadBytes(bytes,name,originLabel='file'){
+  sourceBytes=bytes instanceof Uint8Array?bytes:new Uint8Array(bytes);
+  sourceName=name||AUTO_SOURCE_FILENAME;
+  $('sourceStatus').className='status warn';$('sourceStatus').textContent='Decoding…';
+  try{
+    decoded=F.decodeAll(sourceBytes);
+    try{sourceHash=await F.sha256(sourceBytes);}catch(_){sourceHash=null;}
+    const exact=sourceHash===F.EXPECTED_SHA256;
+    $('sourceStatus').className='status '+(exact?'ok':'warn');
+    $('sourceStatus').textContent=exact?`Known Frontier executable verified (${originLabel}).`:`Face tables decoded from ${originLabel}, but this is not the exact known SHA-256 build (or hashing is unavailable).`;
+    $('sourceMeta').textContent=`${sourceName} · ${sourceBytes.length.toLocaleString()} bytes${sourceHash?' · '+sourceHash.slice(0,12)+'…':''}`;
+    renderAll();return true;
+  }catch(err){
+    decoded=null;$('sourceStatus').className='status bad';$('sourceStatus').textContent='Decode failed: '+(err?.message||err);
+    $('sourceMeta').textContent=`${sourceName} · ${sourceBytes.length.toLocaleString()} bytes`;renderAll();return false;
+  }
+}
+
+async function tryAutoLoad(){
+  const candidates=autoSourceCandidates();
+  if(!candidates.length){
+    $('sourceStatus').className='status warn';
+    $('sourceStatus').textContent='Automatic GitHub load is unavailable from this local page. Load Frontier manually.';
+    return false;
+  }
+  $('sourceStatus').className='status warn';$('sourceStatus').textContent='Trying to load Frontier automatically…';
+  const errors=[];
+  for(const url of candidates){
+    try{
+      const response=await fetch(url,{cache:'no-store',mode:'cors'});
+      if(!response.ok)throw new Error(`HTTP ${response.status}`);
+      const bytes=new Uint8Array(await response.arrayBuffer());
+      if(!bytes.length)throw new Error('empty response');
+      const ok=await loadBytes(bytes,AUTO_SOURCE_FILENAME,'automatic GitHub/web load');
+      if(ok){$('sourceMeta').textContent+=`\n${url}`;return true;}
+      errors.push(`${url} — unsupported Frontier executable`);
+    }catch(err){errors.push(`${url} — ${err?.message||err}`);}
+  }
+  sourceBytes=null;decoded=null;sourceName='';sourceHash=null;
+  $('sourceStatus').className='status warn';$('sourceStatus').textContent='Automatic Frontier load was not available. Load the executable manually.';
+  $('sourceMeta').textContent=errors.length?`Auto-load tried ${errors.length} location${errors.length===1?'':'s'}.`:'';
+  renderAll();return false;
+}
+
 const CATEGORY_LABELS=Object.fromEntries(F.CATEGORIES.map(c=>[c.key,c.label]));
 
 function parseHex(text,bits){
@@ -191,20 +258,7 @@ function renderAll(){
 async function loadFile(file){
   if(!file)return;
   const ab=await file.arrayBuffer();
-  sourceBytes=new Uint8Array(ab);sourceName=file.name;
-  $('sourceStatus').className='status warn';$('sourceStatus').textContent='Decoding…';
-  try{
-    decoded=F.decodeAll(sourceBytes);
-    try{sourceHash=await F.sha256(sourceBytes);}catch(_){sourceHash=null;}
-    const exact=sourceHash===F.EXPECTED_SHA256;
-    $('sourceStatus').className='status '+(exact?'ok':'warn');
-    $('sourceStatus').textContent=exact?'Known Frontier executable verified.':'Face tables decoded, but this is not the exact known SHA-256 build (or hashing is unavailable).';
-    $('sourceMeta').textContent=`${sourceName} · ${sourceBytes.length.toLocaleString()} bytes${sourceHash?' · '+sourceHash.slice(0,12)+'…':''}`;
-    renderAll();
-  }catch(err){
-    decoded=null;$('sourceStatus').className='status bad';$('sourceStatus').textContent='Decode failed: '+(err?.message||err);
-    $('sourceMeta').textContent=`${sourceName} · ${sourceBytes.length.toLocaleString()} bytes`;renderAll();
-  }
+  await loadBytes(new Uint8Array(ab),file.name,'local file');
 }
 
 function initCategories(){
@@ -243,4 +297,5 @@ dz.addEventListener('drop',e=>loadFile(e.dataTransfer?.files?.[0]));
 
 initCategories();
 renderAll();
+tryAutoLoad();
 })();

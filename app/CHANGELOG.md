@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.02 — automatic source load and preview sizing
+
+- Added an automatic startup attempt to fetch `Frontier` from the hosted project.
+- Added GitHub Pages repository inference and raw `main` / `master` branch fallbacks.
+- Preserved the existing local file picker and drag/drop flow as a non-fatal fallback.
+- Consolidated automatic and manual loading through the same decoder/verification path.
+- Reduced the assembled-face preview from 512×576 CSS pixels to 256×288.
+- Reduced the central preview panel's minimum height so it leaves proportionally more room for the future segment editor.
+
 ## v0.01 — initial face viewer
 
 - Added direct Frontier executable loader and known-build SHA-256 verification.

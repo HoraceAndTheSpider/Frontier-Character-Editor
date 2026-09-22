@@ -27,8 +27,8 @@ summary{cursor:pointer;font-size:13px;font-weight:600;color:#cbd2de}
 .viewerPanel,.usagePanel{background:#181b21;border:1px solid #30343d;border-radius:8px;padding:12px}
 .viewerHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
 .legend{font-size:11px;color:#8f97a5;white-space:nowrap}
-.canvasWrap{display:flex;justify-content:center;align-items:center;min-height:590px;background:#08090b;border:1px solid #30343d;border-radius:6px;overflow:auto;margin-top:10px}
-#faceCanvas{width:512px;height:576px;image-rendering:pixelated;image-rendering:crisp-edges;background:#090a0d;border:1px solid #454a55}
+.canvasWrap{display:flex;justify-content:center;align-items:center;min-height:310px;background:#08090b;border:1px solid #30343d;border-radius:6px;overflow:auto;margin-top:10px}
+#faceCanvas{width:256px;height:288px;image-rendering:pixelated;image-rendering:crisp-edges;background:#090a0d;border:1px solid #454a55}
 .usagePanel{margin-top:14px}
 .usageGrid{display:grid;grid-template-columns:repeat(4,minmax(115px,1fr));gap:8px;margin-top:10px}
 .usageCard{background:#0d0f13;border:1px solid #30343d;border-radius:6px;padding:6px;cursor:pointer}
@@ -53,3 +53,6 @@ code{background:#0e1014;padding:1px 4px;border-radius:3px}
   #faceCanvas{width:min(512px,100%);height:auto}
   .usageGrid{grid-template-columns:repeat(2,1fr)}
 }
+
+/* v0.02 — assembled-face preview stays subordinate to the future segment editor. */
+.viewerPanel .canvasWrap{padding:10px}

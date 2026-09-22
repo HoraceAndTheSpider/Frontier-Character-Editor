@@ -1,13 +1,15 @@
 # Frontier Amiga Face Editor
 
-Current editor version: **v0.01**.
+Current editor version: **v0.02**.
 
 This `app/` directory is the complete deployable browser editor. It does not contain Frontier artwork or executable data. Open `index.html` directly in a modern browser and load a legally owned Amiga `Frontier` executable.
 
-## v0.01 scope
+## v0.02 scope
 
+- Attempts to auto-load `Frontier` from the hosted project/GitHub location before falling back to manual file selection.
 - Decodes the two known face-component banks directly from the executable.
 - Reconstructs complete normal portraits from the game's 32-bit face seed.
+- Uses a compact 256×288 assembled-face display so the complete-face preview does not dominate the future component/segment editing workspace.
 - Exposes Bank A / Bank B browsing, seed entry, Previous / Next and Random.
 - Implements the exact eight runtime four-colour face palettes for palette indices 1–4.
 - Allows a component category and variant to be selected.
@@ -32,6 +34,16 @@ Frontier does not contain a small fixed list of complete faces. Normal portraits
 - bits 25–27: dynamic palette when the secondary control word is zero.
 
 Because selectors are combinatorial, one component can occur in millions of valid generated portraits. The consistency grid therefore supplies representative complete faces with the chosen component locked rather than claiming to list every possible use.
+
+## Automatic source loading
+
+v0.02 keeps the application free of bundled Frontier data but attempts to fetch a file named `Frontier` automatically.
+
+When served from a normal web project with `app/` below the project root, it first tries `../Frontier`.
+
+When served through GitHub Pages in the usual `OWNER.github.io/REPOSITORY/app/` form, the editor also derives the repository name from the page URL and tries the repository-root `Frontier` file on both `main` and `master` through `raw.githubusercontent.com`.
+
+If none of those paths are available, the editor returns to the existing manual file picker/drop workflow. Opening `index.html` directly from `file://` cannot reliably infer a GitHub repository, so manual loading remains the fallback there.
 
 ## Known executable
 
