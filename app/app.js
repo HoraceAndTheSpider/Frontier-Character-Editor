@@ -9,7 +9,7 @@ let sourceBytes=null,decoded=null,sourceName='',sourceHash=null;
 let seed=0,control=0,selectedCategory='eyes_eyewear',usageNonce=0;
 let lastSourceMessage='No binary loaded.',lastSourceClass='warn';
 
-/* v0.08 A/B binary workflow. A is reference/read-only; B carries component and base-palette patches. */
+/* v0.09 A/B binary workflow. A is reference/read-only; B carries component and base-palette patches. */
 const AUTO_SOURCE_FILENAME='Frontier';
 const AUTO_SOURCE_URL='https://raw.githubusercontent.com/HoraceAndTheSpider/Frontier-Character-Editor/master/whdload/data/game/Frontier';
 
@@ -19,8 +19,22 @@ function uniqueUrls(urls){
   return out;
 }
 function autoSourceCandidates(){
-  const urls=[AUTO_SOURCE_URL],loc=window.location;
-  if(/^https?:$/i.test(loc.protocol))try{urls.push(new URL('../whdload/data/game/'+AUTO_SOURCE_FILENAME,loc.href).href);}catch(_){}
+  const loc=window.location,urls=[];
+  let sameOrigin=null;
+
+  if(/^https?:$/i.test(loc.protocol)){
+    try{sameOrigin=new URL('../whdload/data/game/'+AUTO_SOURCE_FILENAME,loc.href).href;}catch(_){}
+  }
+
+  // Hosted copies (especially raw.githack.com/rawcdn.githack.com) should try
+  // their own repository path first. This avoids an unnecessary cross-origin
+  // dependency on raw.githubusercontent.com and is normally the fastest route.
+  if(sameOrigin)urls.push(sameOrigin);
+
+  // Known canonical source remains the fallback when the app is mirrored
+  // somewhere that does not also host whdload/data/game/Frontier.
+  urls.push(AUTO_SOURCE_URL);
+
   return uniqueUrls(urls);
 }
 function bytesEqual(a,b){
@@ -106,7 +120,7 @@ async function tryAutoLoad(){
   for(const url of autoSourceCandidates()){
     if(slots.A||slots.B)return false;
     try{
-      const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),3500);let response;
+      const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),10000);let response;
       try{response=await fetch(url,{cache:'no-store',mode:'cors',signal:abort.signal});}finally{clearTimeout(timer);}
       if(!response.ok)throw new Error(`HTTP ${response.status}`);
       const bytes=new Uint8Array(await response.arrayBuffer());if(!bytes.length)throw new Error('empty response');
@@ -114,6 +128,7 @@ async function tryAutoLoad(){
       errors.push(`${url} — unsupported Frontier binary`);
     }catch(err){errors.push(`${url} — ${err?.message||err}`);}
   }
+  if(errors.length)console.warn('Frontier automatic load failed:',errors);
   lastSourceClass='warn';lastSourceMessage='Automatic Frontier load was not available. Import a binary manually.';renderSourceUi();return false;
 }
 function downloadBytes(bytes,name){

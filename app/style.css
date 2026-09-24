@@ -55,9 +55,13 @@ details{background:#14171c;border:1px solid #30343d;border-radius:6px;padding:9p
 
 @media(max-width:820px){
   header{flex-direction:row;align-items:center}
-  .frontierLogo{width:328px;max-width:40vw}
+  .frontierLogo{width:260px;max-width:36vw}
 }
 @media(max-width:650px){
-  header{flex-direction:column;align-items:flex-start}
-  .frontierLogo{width:410px;max-width:100%}
+  header{flex-direction:row;align-items:flex-start;gap:10px;padding:9px 10px}
+  h1{font-size:17px}
+  .sub{font-size:11px}
+  .frontierLogo{width:140px;max-width:36vw;margin-left:auto}
 }
+
+/* v0.09 — mobile logo sizing and GitHack-oriented hosting fix lives in app.js. */

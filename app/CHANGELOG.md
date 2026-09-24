@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.09 — mobile logo and hosted binary loading
+
+- Corrected the phone breakpoint that allowed the Frontier logo to expand to nearly the full screen width.
+- Keeps the supplied logo file unchanged; only its responsive HTML/CSS display size changes.
+- On phone-size displays the logo is capped at 140 px / 36vw.
+- Automatic Frontier loading now tries the same hosted repository path (`../whdload/data/game/Frontier`) before `raw.githubusercontent.com`.
+- This makes GitHack-hosted copies use the GitHack-hosted binary directly instead of depending first on a cross-origin request.
+- Increased the per-source automatic-load timeout from 3.5 seconds to 10 seconds for slower mobile/CDN connections.
+- Failed automatic source attempts are now also reported to the browser console for diagnosis.
+
 ## v0.08 — title, logo and palette selector
 
 - Restored visible page versioning and changed the title to `Frontier: Elite II - (Amiga Version) Face Editor v0.08`.

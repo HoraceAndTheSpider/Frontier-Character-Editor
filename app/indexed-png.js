@@ -8,7 +8,7 @@
  * Import: non-interlaced indexed PNG using 1/2/4/8-bit indices; rejects pixel values
  * above 15 and returns the original palette indices unchanged.
  */
-const VERSION='0.08';
+const VERSION='0.09';
 const SIG=Uint8Array.from([137,80,78,71,13,10,26,10]);
 
 function u32be(v){return Uint8Array.from([(v>>>24)&255,(v>>>16)&255,(v>>>8)&255,v&255]);}

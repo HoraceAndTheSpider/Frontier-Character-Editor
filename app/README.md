@@ -1,10 +1,10 @@
 # Frontier: Elite II - (Amiga Version) Face Editor
 
-Current editor version: **v0.08**.
+Current editor version: **v0.09**.
 
 This `app/` directory is the complete deployable browser editor. It does not contain Frontier artwork or executable data. Open `index.html` directly in a modern browser and load a legally owned Amiga `Frontier` executable.
 
-## v0.08 scope
+## v0.09 scope
 
 - Restores the visible page version and adopts the title `Frontier: Elite II - (Amiga Version) Face Editor`.
 - Adds the supplied Frontier: Elite II logo to the top-right header, using the original PNG bytes and rendering it at 20% of its 2048px intrinsic width.
@@ -62,17 +62,15 @@ Because selectors are combinatorial, one component can occur in millions of vali
 
 ## Automatic source loading
 
-v0.08 attempts the exact known GitHub source first:
-
-`https://raw.githubusercontent.com/HoraceAndTheSpider/Frontier-Character-Editor/master/whdload/data/game/Frontier`
-
-The GitHub file is 645,752 bytes, matching the analysed executable size.
-
-When the editor itself is hosted within the same repository structure, it also tries the relative project path:
+v0.09 first tries the binary from the same hosted repository structure:
 
 `../whdload/data/game/Frontier`
 
-If neither source is available, the existing manual file picker/drop workflow remains available.
+This is particularly useful when the editor is opened through GitHack, because the app and binary can be fetched from the same origin. If that source is unavailable it falls back to the known raw GitHub source:
+
+`https://raw.githubusercontent.com/HoraceAndTheSpider/Frontier-Character-Editor/master/whdload/data/game/Frontier`
+
+The fetch timeout is 10 seconds to allow the 645,752-byte binary to load over slower mobile/CDN connections. If automatic loading still fails, the A/B manual load and drop controls remain available.
 
 ## Known executable
 
