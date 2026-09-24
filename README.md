@@ -1,5 +1,5 @@
 # Frontier: Elite II - (Amiga Version) Face Editor
-## Author: Dom Cresswell - 2026
+**Author**: Dom Cresswell - 2026
 
 Browser-based editor and reverse-engineering project for the modular character portraits used by the Amiga version of **Frontier: Elite II**. Created by request due to "the original portaits looking awful." (Or less polite wording.)
 
