@@ -1,12 +1,14 @@
 (function(root){
 'use strict';
 
-const VERSION='0.03';
+const VERSION='0.08';
 const EXPECTED_SHA256='ec97dbb2424a3b66509fc742d3c7960be223c2c12c86d7aa17960e4f0577231c';
 const EXPECTED_SIZE=645752;
 const HUNK7_FILE_OFFSET=0x551C4;
 const BANK_TABLES=Object.freeze({A:0x644CC,B:0x65B12});
 const FACE_CANVAS=Object.freeze({width:128,height:144});
+const FACE_BASE_PALETTE_OFFSET=0x87878;
+const EDITABLE_FACE_BASE_PALETTE_INDICES=Object.freeze([5,6,7,8,9,10,11,12]);
 
 const CATEGORIES=Object.freeze([
   Object.freeze({key:'hair_head_outline',label:'Hair / outer head',tableOffset:0x40,seedBit:1}),
@@ -41,6 +43,39 @@ const DYNAMIC_PALETTES=Object.freeze([
   Object.freeze([0x4A4,0x282,0x060,0x040]),
   Object.freeze([0x66E,0x44B,0x229,0x006])
 ]);
+
+/*
+ * Portrait-screen palette traced from the retail Amiga executable. The game
+ * installs this 16-colour table and the face routine then replaces indices
+ * 1..4 with one of DYNAMIC_PALETTES. Indices 5..15 therefore remain fixed.
+ */
+const FACE_BASE_PALETTE=Object.freeze([
+  0x000,0xF33,0x811,0x600,0x500,
+  0x410,0x520,0x741,0x952,0xA74,0xC96,0xEB9,0xFEC,0x87C,0x549,0xAAA
+]);
+
+function readFaceBasePalette(bytes){
+  if(!(bytes instanceof Uint8Array))bytes=new Uint8Array(bytes);
+  if(FACE_BASE_PALETTE_OFFSET+32>bytes.length)throw new Error('Face base palette is outside the executable.');
+  const out=new Array(16);
+  for(let i=0;i<16;i++)out[i]=readU16(bytes,FACE_BASE_PALETTE_OFFSET+i*2)&0x0FFF;
+  return out;
+}
+function patchFaceBasePaletteWord(sourceBytes,index,word){
+  index=Number(index);word=Number(word);
+  if(!Number.isInteger(index)||index<0||index>15)throw new Error('Palette index must be 0..15.');
+  if(!Number.isInteger(word)||word<0||word>0x0FFF)throw new Error('Amiga palette colour must be a 12-bit $RGB word.');
+  const out=Uint8Array.from(sourceBytes);
+  writeU16(out,FACE_BASE_PALETTE_OFFSET+index*2,word&0x0FFF);
+  return out;
+}
+function runtimePaletteWords(paletteIndex,baseWords=FACE_BASE_PALETTE){
+  const out=Array.from(baseWords||FACE_BASE_PALETTE,v=>Number(v)&0x0FFF);
+  if(out.length!==16)throw new Error('Face base palette must contain 16 colours.');
+  const dynamic=DYNAMIC_PALETTES[paletteIndex&7];
+  for(let i=0;i<4;i++)out[i+1]=dynamic[i];
+  return out;
+}
 
 function readU16(bytes,off){return (bytes[off]<<8)|bytes[off+1];}
 function readS16(bytes,off){const v=readU16(bytes,off);return v&0x8000?v-0x10000:v;}
@@ -159,21 +194,15 @@ function recordFor(decoded,bank,key,variant){
 function rgb12(word){
   return [((word>>>8)&15)*17,((word>>>4)&15)*17,(word&15)*17,255];
 }
-function displayPalette(paletteIndex,greyscale=false){
+function displayPalette(paletteIndex,greyscale=false,baseWords=FACE_BASE_PALETTE){
   const out=new Array(16);
   out[0]=[0,0,0,0];
-  for(let i=1;i<16;i++){
-    const g=Math.round((i/15)*235);
-    out[i]=[g,g,g,255];
+  if(greyscale){
+    for(let i=1;i<16;i++){const g=Math.round((i/15)*235);out[i]=[g,g,g,255];}
+    return out;
   }
-  if(!greyscale){
-    const exact=DYNAMIC_PALETTES[paletteIndex&7];
-    for(let i=0;i<4;i++)out[i+1]=rgb12(exact[i]);
-    // Known renderer conventions; indices 5..13 remain neutral reference colours
-    // until the complete face-screen palette load is traced.
-    out[14]=[0,0,85,255];
-    out[15]=[170,170,170,255];
-  }
+  const words=runtimePaletteWords(paletteIndex,baseWords);
+  for(let i=1;i<16;i++)out[i]=rgb12(words[i]);
   return out;
 }
 
@@ -231,9 +260,11 @@ async function sha256(bytes){
 
 root.FrontierFaceData=Object.freeze({
   VERSION,EXPECTED_SHA256,EXPECTED_SIZE,HUNK7_FILE_OFFSET,BANK_TABLES,FACE_CANVAS,
-  CATEGORIES,NORMAL_RENDER_ORDER,DYNAMIC_PALETTES,
+  FACE_BASE_PALETTE_OFFSET,EDITABLE_FACE_BASE_PALETTE_INDICES,
+  CATEGORIES,NORMAL_RENDER_ORDER,DYNAMIC_PALETTES,FACE_BASE_PALETTE,
   readU16,readS16,writeU16,hex,categoryDef,decodeRecord,encodePixels,patchRecordPixels,
+  readFaceBasePalette,patchFaceBasePaletteWord,
   decodeBank,decodeAll,bankForSeed,paletteFor,headgearForControl,variantFor,variantsForSeed,
-  setBank,setVariant,setHeadgear,recordFor,rgb12,displayPalette,composeFace,renderIndexed,sha256
+  setBank,setVariant,setHeadgear,recordFor,rgb12,runtimePaletteWords,displayPalette,composeFace,renderIndexed,sha256
 });
 })(typeof globalThis!=='undefined'?globalThis:this);
